@@ -1,0 +1,32 @@
+Shader "2DSpriteShader/Particles Additive" 
+{
+	Properties 
+	{
+		_MainTex ("_MainTex", 2D) = "white" {}
+        [Enum(Off,14,On,15)]
+		_ColorMask("ColorMask", Int) =15
+	}
+
+	SubShader 
+	{
+		Tags { "Queue"="Transparent" "IgnoreProjector"="True" "RenderType"="Transparent" }
+		Blend SrcAlpha One
+		Cull Off Lighting Off ZWrite Off Fog { Mode Off }
+		ColorMask [_ColorMask]
+
+		BindChannels 
+		{
+			Bind "Color", color
+			Bind "Vertex", vertex
+			Bind "TexCoord", texcoord
+		}
+	
+		Pass 
+		{
+			SetTexture [_MainTex] 
+			{
+				combine texture * primary
+			}
+		}
+	}
+}
