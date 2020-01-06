@@ -1,0 +1,26 @@
+Shader "2DSpriteShader/Sprite" 
+{
+	Properties 
+	{
+		_MainTex ("_MainTex", 2D) = "white" {}
+		
+        [Enum(Off,14,On,15)]
+		_ColorMask("ColorMask", Int) =14
+	}
+
+	SubShader 
+	{
+		Tags { "Queue"="Transparent" "IgnoreProjector"="True" "RenderType"="Transparent" }
+		Cull Off Lighting Off ZWrite Off Fog { Color (0,0,0,0) }
+		ColorMask [_ColorMask]
+		Blend SrcAlpha OneMinusSrcAlpha
+
+		Pass 
+		{ 
+			SetTexture [_MainTex] 
+			{
+				combine texture * primary
+			}
+		}
+	}
+}
