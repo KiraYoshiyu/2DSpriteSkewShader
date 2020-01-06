@@ -1,0 +1,71 @@
+Shader "2DSpriteShader/SpriteMask_Additive"
+{
+	Properties
+	{
+		_MainTex ("_MainTex", 2D) = "white" {}
+	}
+
+	SubShader
+	{
+		Tags {"Queue"="Transparent" "RenderType"="Opaque"}
+		LOD 100
+		Cull Off Lighting Off ZWrite Off Fog { Mode Off }
+		Blend DstAlpha One  //混合指令: 遮罩 + 相加 => 遮罩內容物呈現透光效果
+		ColorMask RGB
+
+		Pass
+		{
+			CGPROGRAM
+
+			#pragma vertex vert    //定義vertex Shader 方法
+			#pragma fragment frag  //定義 fragment Shader 方法
+			
+			#include "UnityCG.cginc"
+			//把輸入的參數匯入Pass
+			sampler2D _MainTex;
+			float4 _MainTex_ST;
+			
+			//輸入端
+			struct appdata
+			{
+				fixed4 vertex : POSITION; //後面的語義用來讓Unity知道這個變數的涵義
+				fixed4 texcoord : TEXCOORD0;
+				fixed4 color : COLOR;
+			};
+
+
+			//輸出端，把頂點傳給片段
+			struct v2f
+			{
+				fixed4 vertex : SV_POSITION; //給Unity作特定處理，作透視除法、光柵化等等
+				fixed2 uv : TEXCOORD2;
+				fixed4 color : TEXCOORD3;
+			};
+
+			//方法
+			v2f vert (appdata v)
+			{
+			    v2f o;
+				
+				o.color =  v.color;
+
+				o.vertex = UnityObjectToClipPos( v.vertex);   //與輸入的頂點做矩陣乘積
+				
+				o.uv = TRANSFORM_TEX(v.texcoord.xy,_MainTex);
+
+				return o;
+			}
+			
+			fixed4 frag (v2f i) : SV_Target  //SV_Target: 渲染顯示在畫面上
+			{  
+				fixed4 texColor = tex2D(_MainTex, i.uv.xy); //取得材質
+
+				fixed4 FinalColor = fixed4(texColor.rgb * texColor.a * i.color*i.color.a,1); //把透明的部分轉為黑色
+
+			    return FinalColor;
+			}
+			ENDCG
+		}
+	}
+    FallBack "Transparent/VertexLit" 
+}
